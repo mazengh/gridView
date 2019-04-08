@@ -12,7 +12,7 @@
                 <h3>Payments</h3>
               </div>
               <div class="colFilter">
-                <font-awesome-icon :icon="['fa', 'bars']" @click="toggleColFilter1"></font-awesome-icon>
+                <font-awesome-icon :icon="['fa', 'bars']" @click="toggleColFilter"></font-awesome-icon>
                 <div
                   class="colsToFilter"
                   v-bind:class="{ showCols: getShowColFilter }"
@@ -33,7 +33,18 @@
           </th>
         </tr>
         <tr>
-          <th v-for="head in getHeaders">{{head}}</th>
+          <th v-for="head in getHeaders" @click="sortCol(head)">
+            {{head}}
+            <i v-show="getSortCol === head">
+              <font-awesome-icon :icon="['fa', 'spinner']" spin v-if="isSorting"></font-awesome-icon>
+              <font-awesome-icon
+                :icon="['fa', 'sort-amount-up']"
+                class="asc"
+                v-else-if="sortDirection === 'ASC'"
+              ></font-awesome-icon>
+              <font-awesome-icon :icon="['fa', 'sort-amount-up']" v-else></font-awesome-icon>
+            </i>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -47,7 +58,7 @@
 
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapMutations, mapActions, mapState } from "vuex";
 import { store } from "../store/store.js";
 import { db } from "../firebaseConfig";
 
@@ -64,11 +75,22 @@ export default {
       "getHeaders",
       "getColCount",
       "getColsToShow",
-      "getShowColFilter"
-    ])
+      "getShowColFilter",
+      "getSortCol"
+    ]),
+    ...mapState({
+      sortDirection: state => state.grid.sortDirection,
+      isSorting: state => state.grid.isSorting
+    })
   },
   methods: {
-    ...mapMutations(["toggleCol", "toggleColFilter", "hideColFilter"]),
+    ...mapMutations([
+      "toggleCol",
+      "toggleColFilter",
+      "hideColFilter",
+      "setSorting"
+    ]),
+    ...mapActions(["sortBy"]),
     showCol(head) {
       if (this.config.colsToShow.length > 0) {
         return this.config.colsToShow.includes(head);
@@ -76,18 +98,19 @@ export default {
         return true;
       }
     },
-    toggleColFilter1(event) {
-      event.preventDefault();
-      this.toggleColFilter();
-    },
     closeColFilter(event) {
       event.stopPropagation();
       this.hideColFilter();
+    },
+    sortCol(col) {
+      const dbTableRef = db.ref(this.config.tableName);
+      this.$store.dispatch("sortBy", { ref: dbTableRef, col: col });
     }
   },
   beforeCreate() {},
   created() {
     const dbTableRef = db.ref(this.config.tableName);
+    console.log(dbTableRef);
     this.$store.commit("addConfig", this.config);
     this.$store.dispatch("setTableRef", dbTableRef);
   }
@@ -108,6 +131,8 @@ div.grid-container {
   margin: -2px 0 0 5px;
   padding: 0px;
 }
+
+/* Filter Columns CSS */
 .colFilter {
   margin-left: auto;
   margin-right: 10px;
@@ -169,6 +194,19 @@ li.hiddenCol {
   color: red;
 }
 
+/* Sort Columns CSS */
+svg.fa-sort-amount-up,
+svg.fa-spinner {
+  margin-left: 2px;
+  color: #c7d9db;
+}
+svg.asc {
+  /* flip the icon for Asc sort direction*/
+  transform: scaleY(-1);
+  filter: FlipV;
+}
+
+/* Responsive Table CSS */
 table {
   border: 1px solid white;
   border-spacing: 1;
@@ -185,7 +223,7 @@ table * {
 }
 table td,
 table th {
-  padding-left: 8px;
+  padding: 0 15px;
 }
 table thead tr {
   height: 60px;
@@ -204,6 +242,8 @@ table th {
 table th {
   color: #fff;
   text-transform: capitalize;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 tbody tr:nth-child(even) {

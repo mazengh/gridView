@@ -17,7 +17,7 @@ export default {
           { name: "name", visible: true },
           { name: "id", visible: true },
           { name: "date", visible: true },
-          { name: "amount", visible: false }
+          { name: "amount", visible: true }
         ],
         colOrder: ["id", "name", "description", "date", "amount"]
       }

@@ -6,7 +6,10 @@ const state = {
   tableName: "",
   colOrder: [],
   colsToShow: [],
-  showColFilter: false
+  showColFilter: false,
+  sortCol: null,
+  sortDirection: "ASC",
+  isSorting: false
 };
 
 const getters = {
@@ -20,7 +23,8 @@ const getters = {
   },
   getTableName: state => state.tableName,
   getColCount: state => state.colsToShow.length,
-  getShowColFilter: state => state.showColFilter
+  getShowColFilter: state => state.showColFilter,
+  getSortCol: state => state.sortCol
 };
 
 const mutations = {
@@ -76,14 +80,55 @@ const mutations = {
   },
   hideColFilter(state) {
     state.showColFilter = false;
+  },
+  setSorting(state, { col, isSorting }) {
+    state.isSorting = isSorting;
+
+    if (isSorting) {
+      if (state.sortCol === col) {
+        switch (state.sortDirection) {
+          case null:
+          case "DESC":
+            state.sortDirection = "ASC";
+            break;
+          case "ASC":
+            state.sortDirection = "DESC";
+        }
+      } else {
+        state.sortDirection = "ASC";
+      }
+
+      state.sortCol = col;
+    } else {
+      // handle DESC sort when sort is ready
+      if (state.sortDirection === "DESC") {
+        state.rows.sort((a, b) => {
+          if (a[col] > b[col]) {
+            return -1;
+          }
+          if (a[col] < b[col]) {
+            return 1;
+          }
+          return 0;
+        });
+      }
+    }
   }
 };
 
 const actions = {
-  setTableRef: firebaseAction(({ bindFirebaseRef, commit, state }, { ref }) => {
+  setTableRef: firebaseAction(({ bindFirebaseRef, commit }, { ref }) => {
     bindFirebaseRef("rows", ref, {
       readyCallback() {
         commit("setConfig");
+      }
+    });
+  }),
+  sortBy: firebaseAction(({ bindFirebaseRef, commit }, { ref, col }) => {
+    commit("setSorting", { col: col, isSorting: true });
+    bindFirebaseRef("rows", ref.orderByChild(col), {
+      readyCallback() {
+        commit("setSorting", { col: col, isSorting: false });
       }
     });
   })

@@ -5,10 +5,8 @@
         <tr>
           <th :colspan="getColCount">
             <div class="controls">
-              <div>
+              <div class="title">
                 <font-awesome-icon :icon="['fa', 'table']"></font-awesome-icon>
-              </div>
-              <div>
                 <h3>Payments</h3>
               </div>
               <div class="colFilter">
@@ -28,6 +26,11 @@
                     >{{head.name}}</li>
                   </ul>
                 </div>
+              </div>
+              <div class="paginationSummary">
+                Showing
+                <b>{{getPaginationSummary.startRow}}-{{getPaginationSummary.endRow}}</b> of
+                <b>{{getPaginationSummary.totalRows}}</b>
               </div>
             </div>
           </th>
@@ -52,6 +55,23 @@
           <td v-bind:data-column-name="head" v-for="head in getHeaders">{{row[head]}}</td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td :colspan="getColCount">
+            <ul class="pagination">
+              <li>
+                <a @click="previousPage">&laquo;</a>
+              </li>
+              <li v-for="page in getPages" :key="`page${page}`">
+                <a @click="setPage(page)" v-bind:class="{ active: page===currentPage}">{{page}}</a>
+              </li>
+              <li>
+                <a @click="nextPage">&raquo;</a>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </template>
@@ -76,11 +96,14 @@ export default {
       "getColCount",
       "getColsToShow",
       "getShowColFilter",
-      "getSortCol"
+      "getSortCol",
+      "getPaginationSummary",
+      "getPages"
     ]),
     ...mapState({
       sortDirection: state => state.grid.sortDirection,
-      isSorting: state => state.grid.isSorting
+      isSorting: state => state.grid.isSorting,
+      currentPage: state => state.grid.currentPage
     })
   },
   methods: {
@@ -88,9 +111,10 @@ export default {
       "toggleCol",
       "toggleColFilter",
       "hideColFilter",
-      "setSorting"
+      "setSorting",
+      "setPage"
     ]),
-    ...mapActions(["sortBy"]),
+    ...mapActions(["sortBy", "nextPage", "previousPage"]),
     showCol(head) {
       if (this.config.colsToShow.length > 0) {
         return this.config.colsToShow.includes(head);
@@ -110,7 +134,6 @@ export default {
   beforeCreate() {},
   created() {
     const dbTableRef = db.ref(this.config.tableName);
-    console.log(dbTableRef);
     this.$store.commit("addConfig", this.config);
     this.$store.dispatch("setTableRef", dbTableRef);
   }
@@ -126,15 +149,29 @@ div.grid-container {
 
 .controls {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
 }
 .controls div h3 {
-  margin: -2px 0 0 5px;
+  margin: -4px 0 0 5px;
   padding: 0px;
+}
+
+.title {
+  display: flex;
+  flex-grow: 1;
 }
 
 /* Filter Columns CSS */
 .colFilter {
-  margin-left: auto;
+  flex-grow: 0;
+  align-items: flex-end;
+  margin-right: 30px;
+}
+.paginationSummary {
+  font-weight: normal;
+  font-size: 0.9em;
   margin-right: 10px;
 }
 svg.fa-bars {
@@ -194,6 +231,67 @@ li.hiddenCol {
   color: red;
 }
 
+/* Pagination CSS */
+ul.pagination {
+  list-style-type: none;
+  display: inline-block;
+  padding: 10px 0;
+  margin: 0;
+}
+
+ul.pagination li {
+  display: inline;
+  user-select: none;
+}
+
+ul.pagination li a {
+  color: #364f54;
+  float: left;
+  padding: 5px 10px;
+  text-decoration: none;
+}
+
+ul.pagination li a.active {
+  background-color: #364f54;
+  color: white;
+  font-weight: bold;
+}
+
+ul.pagination li a:hover:not(.active) {
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+ul.pagination li a {
+  border-radius: 5px;
+}
+
+ul.pagination li a.active {
+  border-radius: 5px;
+}
+
+ul.pagination li a {
+  transition: background-color 0.5s;
+}
+
+ul.pagination li a {
+  border: 1px solid #ddd;
+}
+
+.pagination li:first-child a {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.pagination li:last-child a {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+ul.pagination li a {
+  margin: 0 2px;
+}
+
 /* Sort Columns CSS */
 svg.fa-sort-amount-up,
 svg.fa-spinner {
@@ -226,7 +324,7 @@ table th {
   padding: 0 15px;
 }
 table thead tr {
-  height: 60px;
+  height: 50px;
   background: #364f54;
 }
 table tbody tr {

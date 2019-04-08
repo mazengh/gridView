@@ -19,7 +19,8 @@ export default {
           { name: "date", visible: true },
           { name: "amount", visible: true }
         ],
-        colOrder: ["id", "name", "description", "date", "amount"]
+        colOrder: ["id", "name", "description", "date", "amount"],
+        pageSize: 10
       }
     };
   },

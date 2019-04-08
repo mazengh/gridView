@@ -9,12 +9,20 @@ const state = {
   showColFilter: false,
   sortCol: null,
   sortDirection: "ASC",
-  isSorting: false
+  isSorting: false,
+  pageSize: 10,
+  pageOffset: 0,
+  currentPage: 1
 };
 
 const getters = {
   getColsToShow: state => state.colsToShow,
-  getRows: state => state.rows,
+  getRows: state => {
+    return state.rows.slice(
+      state.pageOffset,
+      state.pageSize * state.currentPage
+    );
+  },
   getHeaders: state => {
     // return visible columns only
     return state.colsToShow
@@ -24,16 +32,36 @@ const getters = {
   getTableName: state => state.tableName,
   getColCount: state => state.colsToShow.length,
   getShowColFilter: state => state.showColFilter,
-  getSortCol: state => state.sortCol
+  getSortCol: state => state.sortCol,
+  getPaginationSummary: state => {
+    return {
+      startRow: state.pageOffset + 1,
+      endRow: state.currentPage * state.pageSize,
+      totalRows: state.rows.length
+    };
+  },
+  getTotalPages: state => Math.ceil(state.rows.length / state.pageSize),
+  getPages: state => {
+    // return array of page numbers. ex: [1,2,3,4,5,6,7,8,9,10]
+    return Array.from(
+      { length: getters.getTotalPages(state) },
+      (j, k) => k + 1
+    );
+  }
 };
 
 const mutations = {
   addConfig(state, config) {
     state.config = config;
   },
+  setPage(state, pageNum) {
+    state.currentPage = pageNum;
+    state.pageOffset = (pageNum - 1) * state.pageSize;
+  },
   setConfig(state) {
     const config = state.config;
     state.tableName = config.tableName || state.tableName;
+    state.pageSize = config.pageSize || state.pageSize;
     state.colOrder = config.colOrder || state.colOrder;
     state.colsToShow = config.colsToShow
       ? [...config.colsToShow]
@@ -131,7 +159,17 @@ const actions = {
         commit("setSorting", { col: col, isSorting: false });
       }
     });
-  })
+  }),
+  nextPage: ({ state, commit }) => {
+    if (state.currentPage < getters.getTotalPages(state)) {
+      commit("setPage", state.currentPage + 1);
+    }
+  },
+  previousPage: ({ state, commit }) => {
+    if (state.currentPage > 1) {
+      commit("setPage", state.currentPage - 1);
+    }
+  }
 };
 
 export default {

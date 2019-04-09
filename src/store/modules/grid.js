@@ -26,6 +26,27 @@ const getters = {
     } else {
       state.filteredRows = state.rows.filter(row => {
         for (var col of columnsWithFilter) {
+          // =, >, >=, <, <=, !=, <>
+          // search for logical comparison operator in string
+          const comparisonOperator = col.expr.match("^(<[=>]?|=|>=?|!=)");
+          if (comparisonOperator) {
+            switch (comparisonOperator[0]) {
+              case "=":
+                return row[col.name] == col.expr.substr(1);
+              case ">":
+                return row[col.name] > col.expr.substr(1);
+              case ">=":
+                return row[col.name] >= col.expr.substr(2);
+              case "<":
+                return row[col.name] < col.expr.substr(1);
+              case "<=":
+                return row[col.name] <= col.expr.substr(2);
+              case "!=":
+              case "<>":
+                return row[col.name] != col.expr.substr(2);
+            }
+          }
+
           const regexpr = new RegExp(col.expr, "gi");
           const cellData = isNaN(row[col.name])
             ? row[col.name]

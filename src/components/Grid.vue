@@ -29,8 +29,11 @@
               </div>
               <div class="paginationSummary">
                 Showing
-                <b>{{getPaginationSummary.startRow}}-{{getPaginationSummary.endRow}}</b> of
-                <b>{{getPaginationSummary.totalRows}}</b>
+                <b>{{getPaginationSummary.firstRow}}-{{getPaginationSummary.lastRow}}</b>
+                <span v-show="getPaginationSummary.totalRows > getPaginationSummary.lastRow">
+                  of
+                  <b>{{getPaginationSummary.totalRows}}</b>
+                </span>
               </div>
             </div>
           </th>
@@ -55,6 +58,7 @@
                   type="text"
                   @mouseenter="addPlaceHolder($event, head)"
                   @mouseleave="removePlaceHolder($event)"
+                  @input="setFilterExpr($event, head)"
                 >
               </div>
             </div>
@@ -114,7 +118,8 @@ export default {
     ...mapState({
       sortDirection: state => state.grid.sortDirection,
       isSorting: state => state.grid.isSorting,
-      currentPage: state => state.grid.currentPage
+      currentPage: state => state.grid.currentPage,
+      colsToShow: state => state.grid.colsToShow
     })
   },
   methods: {
@@ -146,6 +151,12 @@ export default {
     },
     removePlaceHolder: function(event) {
       event.target.placeholder = "";
+    },
+    setFilterExpr(event, col) {
+      this.$store.commit("setFilterExpr", {
+        expr: event.target.value,
+        colName: col
+      });
     }
   },
   beforeCreate() {},

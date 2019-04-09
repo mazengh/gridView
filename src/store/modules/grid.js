@@ -12,13 +12,33 @@ const state = {
   isSorting: false,
   pageSize: 10,
   pageOffset: 0,
-  currentPage: 1
+  currentPage: 1,
+  filteredRows: []
 };
 
 const getters = {
   getColsToShow: state => state.colsToShow,
   getRows: state => {
-    return state.rows.slice(
+    const columnsWithFilter = state.colsToShow.filter(col => col.expr);
+
+    if (columnsWithFilter.length <= 0) {
+      state.filteredRows = state.rows;
+    } else {
+      state.filteredRows = state.rows.filter(row => {
+        for (var col of columnsWithFilter) {
+          const regexpr = new RegExp(col.expr, "gi");
+          const cellData = isNaN(row[col.name])
+            ? row[col.name]
+            : row[col.name].toString();
+          if (!cellData.match(regexpr)) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    return state.filteredRows.slice(
       state.pageOffset,
       state.pageSize * state.currentPage
     );
@@ -34,13 +54,20 @@ const getters = {
   getShowColFilter: state => state.showColFilter,
   getSortCol: state => state.sortCol,
   getPaginationSummary: state => {
+    let lastRow;
+    if (state.filteredRows.length < state.currentPage * state.pageSize) {
+      lastRow = state.filteredRows.length;
+    } else {
+      lastRow = state.currentPage * state.pageSize;
+    }
+
     return {
-      startRow: state.pageOffset + 1,
-      endRow: state.currentPage * state.pageSize,
-      totalRows: state.rows.length
+      firstRow: state.pageOffset + 1,
+      lastRow: lastRow,
+      totalRows: state.filteredRows.length
     };
   },
-  getTotalPages: state => Math.ceil(state.rows.length / state.pageSize),
+  getTotalPages: state => Math.ceil(state.filteredRows.length / state.pageSize),
   getPages: state => {
     // return array of page numbers. ex: [1,2,3,4,5,6,7,8,9,10]
     return Array.from(
@@ -53,6 +80,10 @@ const getters = {
 const mutations = {
   addConfig(state, config) {
     state.config = config;
+  },
+  setFilterExpr(state, { expr, colName }) {
+    const filteredCol = state.colsToShow.find(col => col.name === colName);
+    filteredCol.expr = expr;
   },
   setPage(state, pageNum) {
     state.currentPage = pageNum;
@@ -69,7 +100,7 @@ const mutations = {
       ? Object.keys(state.rows[0])
           .filter(col => col !== ".key")
           .map(function(name) {
-            return { name: name, visible: true };
+            return { name: name, visible: true, expr: "" };
           })
       : [];
 

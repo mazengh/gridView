@@ -29,6 +29,15 @@ const getters = {
           // =, >, >=, <, <=, !=, <>
           // search for logical comparison operator in string
           const comparisonOperator = col.expr.match("^(<[=>]?|=|>=?|!=)");
+
+          // do not start filtering while user is inputing comparison operator
+          if (
+            comparisonOperator &&
+            comparisonOperator[0] === event.target.value
+          ) {
+            return true;
+          }
+
           if (comparisonOperator) {
             switch (comparisonOperator[0]) {
               case "=":

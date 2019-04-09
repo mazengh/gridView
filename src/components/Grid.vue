@@ -36,17 +36,28 @@
           </th>
         </tr>
         <tr>
-          <th v-for="head in getHeaders" @click="sortCol(head)">
-            {{head}}
-            <i v-show="getSortCol === head">
-              <font-awesome-icon :icon="['fa', 'spinner']" spin v-if="isSorting"></font-awesome-icon>
-              <font-awesome-icon
-                :icon="['fa', 'sort-amount-up']"
-                class="asc"
-                v-else-if="sortDirection === 'ASC'"
-              ></font-awesome-icon>
-              <font-awesome-icon :icon="['fa', 'sort-amount-up']" v-else></font-awesome-icon>
-            </i>
+          <th v-for="head in getHeaders">
+            <div class="gridHead">
+              <div class="colHeader" @click="sortCol(head)">
+                {{head}}
+                <i v-show="getSortCol === head">
+                  <font-awesome-icon :icon="['fa', 'spinner']" spin v-if="isSorting"></font-awesome-icon>
+                  <font-awesome-icon
+                    :icon="['fa', 'sort-amount-up']"
+                    class="asc"
+                    v-else-if="sortDirection === 'ASC'"
+                  ></font-awesome-icon>
+                  <font-awesome-icon :icon="['fa', 'sort-amount-up']" v-else></font-awesome-icon>
+                </i>
+              </div>
+              <div class="colFilter">
+                <input
+                  type="text"
+                  @mouseenter="addPlaceHolder($event, head)"
+                  @mouseleave="removePlaceHolder($event)"
+                >
+              </div>
+            </div>
           </th>
         </tr>
       </thead>
@@ -129,6 +140,12 @@ export default {
     sortCol(col) {
       const dbTableRef = db.ref(this.config.tableName);
       this.$store.dispatch("sortBy", { ref: dbTableRef, col: col });
+    },
+    addPlaceHolder: function(event, head) {
+      event.target.placeholder = `Search or filter ${head}`;
+    },
+    removePlaceHolder: function(event) {
+      event.target.placeholder = "";
     }
   },
   beforeCreate() {},
@@ -165,7 +182,6 @@ div.grid-container {
 
 /* Filter Columns CSS */
 .colFilter {
-  flex-grow: 0;
   align-items: flex-end;
   margin-right: 30px;
 }
@@ -361,6 +377,25 @@ tbody tr:nth-child(even) {
 
 /* rule for 480px < width  <= 767px; */
 @media only screen and (max-width: 767px) {
+  div.gridHead {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+  div.colHead {
+  }
+  div.colFilter {
+  }
+  div.controls {
+    align-items: center;
+    height: 50px;
+  }
+  table thead tr:nth-child(1) th {
+    height: 60px;
+  }
+  div.colFilter input {
+    height: 10px;
+  }
   table {
     display: block;
   }
@@ -370,12 +405,17 @@ tbody tr:nth-child(even) {
   table th {
     display: block;
   }
-  table thead {
-    display: none;
+  table thead tr:nth-child(2) {
+    display: block;
+    height: auto;
+    font-size: 0.9em;
+  }
+  table thead tr:nth-child(2) th {
+    padding: 3px 15px;
   }
   table tbody tr {
     height: auto;
-    padding: 37px 0;
+    padding: 10px 0;
   }
   table tbody tr td {
     padding-left: 40% !important;

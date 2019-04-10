@@ -221,6 +221,9 @@ const actions = {
       }
     });
   }),
+  editField: firebaseAction(({}, { ref, cell }) => {
+    ref.update(cell);
+  }),
   nextPage: ({ state, commit }) => {
     if (state.currentPage < getters.getTotalPages(state)) {
       commit("setPage", state.currentPage + 1);

@@ -9,7 +9,7 @@
                 <font-awesome-icon :icon="['fa', 'table']"></font-awesome-icon>
                 <h3>Payments</h3>
               </div>
-              <div class="colFilter">
+              <div class="colFilter" title="Filter Columns">
                 <font-awesome-icon :icon="['fa', 'bars']" @click="toggleColFilter"></font-awesome-icon>
                 <div
                   class="colsToFilter"
@@ -56,6 +56,7 @@
               <div class="colFilter">
                 <input
                   type="text"
+                  title="Enter text or use logical operators =, >, >=, <, <=, !=, <>"
                   @mouseenter="addPlaceHolder($event, head)"
                   @mouseleave="removePlaceHolder($event)"
                   @input="setFilterExpr($event, head)"
@@ -65,9 +66,35 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody @click="tbodyClickHandler($event)">
         <tr v-for="row in getRows" :key="row['.key']">
-          <td v-bind:data-column-name="head" v-for="head in getHeaders">{{row[head]}}</td>
+          <td
+            v-bind:data-column-name="head"
+            v-for="head in getHeaders"
+            :key="`${head}-${row['.key']}`"
+            :id="`${head}-${row['.key']}`"
+          >
+            <p v-if="isEditable(head)">
+              <button
+                id="saveFieldBtn"
+                title="Save"
+                v-if="fieldBeingEdited === `editable-${row['.key']}-${head}`"
+                @click="saveField($event)"
+              >&#10004;</button>
+              <textarea
+                :id="`editable-${row['.key']}-${head}-textarea`"
+                v-if="fieldBeingEdited === `editable-${row['.key']}-${head}`"
+                class="editableCell"
+              >{{row[head]}}</textarea>
+              <span
+                :id="`editable-${row['.key']}-${head}`"
+                class="editable"
+                v-bind:class="{hidden: fieldBeingEdited === `editable-${row['.key']}-${head}`}"
+              >{{row[head]}}</span>
+            </p>
+
+            <span v-else>{{row[head]}}</span>
+          </td>
         </tr>
       </tbody>
       <tfoot>
@@ -101,7 +128,7 @@ export default {
   props: { config: Object },
   data() {
     return {
-      orderedCols: []
+      fieldBeingEdited: null
     };
   },
   computed: {
@@ -130,21 +157,14 @@ export default {
       "setSorting",
       "setPage"
     ]),
-    ...mapActions(["sortBy", "nextPage", "previousPage"]),
-    showCol(head) {
-      if (this.config.colsToShow.length > 0) {
-        return this.config.colsToShow.includes(head);
-      } else {
-        return true;
-      }
-    },
+    ...mapActions(["sortBy", "nextPage", "previousPage", "editField"]),
     closeColFilter(event) {
       event.stopPropagation();
       this.hideColFilter();
     },
     sortCol(col) {
       const dbTableRef = db.ref(this.config.tableName);
-      this.$store.dispatch("sortBy", { ref: dbTableRef, col: col });
+      this.sortBy({ ref: dbTableRef, col: col });
     },
     addPlaceHolder: function(event, head) {
       event.target.placeholder = `Search or filter ${head}`;
@@ -157,6 +177,33 @@ export default {
         expr: event.target.value,
         colName: col
       });
+    },
+    tbodyClickHandler(event) {
+      if (event.target.className === "editable") {
+        this.fieldBeingEdited = event.target.id;
+      }
+      event.stopPropagation();
+    },
+    saveField(event) {
+      const rowObject = this.fieldBeingEdited.split("-")[1];
+      const colName = this.fieldBeingEdited.split("-")[2];
+
+      const ref = `${this.config.tableName}/${rowObject}`;
+      console.log(rowObject, colName, ref);
+      const cellData = document.getElementById(
+        `${this.fieldBeingEdited}-textarea`
+      ).value;
+
+      const dbChildRef = db.ref(ref);
+      this.editField({
+        ref: dbChildRef,
+        cell: { [colName]: cellData }
+      });
+      event.stopPropagation();
+    },
+    isEditable(colName) {
+      const col = this.colsToShow.find(col => col.name === colName);
+      return col.editable;
     }
   },
   beforeCreate() {},
@@ -331,6 +378,52 @@ svg.asc {
   filter: FlipV;
 }
 
+td {
+  height: inherit;
+}
+p {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+p span.editable {
+  justify-content: center;
+}
+span.hidden {
+  visibility: hidden;
+}
+/* Editable field CSS */
+button#saveFieldBtn {
+  font-size: 0.5em;
+  font-weight: bold;
+  position: absolute;
+  right: 0;
+  top: 2px;
+  cursor: pointer;
+  color: #364f54;
+}
+textarea.editableCell {
+  position: absolute;
+  background: transparent;
+  width: 100%;
+  height: calc(100% - 20px);
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  overflow: hidden;
+  resize: none;
+  z-index: 1;
+  margin-left: -2px;
+  margin-top: 0.35em;
+  border: none;
+}
+
+textarea.editableCell:focus {
+  border: none;
+  outline: none;
+}
+
 /* Responsive Table CSS */
 table {
   border: 1px solid white;
@@ -338,6 +431,10 @@ table {
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+
   overflow: hidden;
   width: 100%;
   margin: 0 auto;
@@ -429,7 +526,8 @@ tbody tr:nth-child(even) {
     padding: 10px 0;
   }
   table tbody tr td {
-    padding-left: 40% !important;
+    padding-left: 36% !important;
+    width: calc(63% - 20px);
     margin-bottom: 24px;
   }
   table tbody tr td:last-child {
@@ -447,6 +545,16 @@ tbody tr:nth-child(even) {
   table tbody tr td:before {
     content: attr(data-column-name);
     text-transform: capitalize;
+  }
+
+  textarea.editableCell {
+    height: 100%;
+    margin-top: 0px;
+  }
+
+  button#saveFieldBtn {
+    right: -10px;
+    top: -12px;
   }
 }
 

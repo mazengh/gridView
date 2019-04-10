@@ -12,13 +12,13 @@ export default {
     return {
       gridConfig: {
         tableName: "payments",
-        // colsToShow: [
-        //   { name: "description", visible: true },
-        //   { name: "name", visible: true, expr: "" },
-        //   { name: "id", visible: true, expr: "" },
-        //   { name: "date", visible: true, expr: "" },
-        //   { name: "amount", visible: true, expr: "" }
-        // ],
+        colsToShow: [
+          { name: "description", visible: true, expr: "", editable: true },
+          { name: "name", visible: true, expr: "", editable: false },
+          { name: "id", visible: true, expr: "", editable: false },
+          { name: "date", visible: true, expr: "", editable: false },
+          { name: "amount", visible: true, expr: "", editable: false }
+        ],
         colOrder: ["id", "name", "description", "date", "amount"],
         pageSize: 10
       }

@@ -181,6 +181,9 @@ export default {
     tbodyClickHandler(event) {
       if (event.target.className === "editable") {
         this.fieldBeingEdited = event.target.id;
+        setTimeout(() => {
+          document.getElementById(`${this.fieldBeingEdited}-textarea`).focus();
+        }, 500);
       }
       event.stopPropagation();
     },

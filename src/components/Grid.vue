@@ -39,7 +39,7 @@
           </th>
         </tr>
         <tr>
-          <th v-for="head in getHeaders">
+          <th v-for="head in getHeaders" :key="`${head}-col}`">
             <div class="gridHead">
               <div class="colHeader" @click="sortCol(head)">
                 {{head}}
@@ -67,7 +67,7 @@
         </tr>
       </thead>
       <tbody @click="tbodyClickHandler($event)">
-        <tr v-for="row in getRows" :key="row['.key']">
+        <tr v-for="row in getRows" :key="`row-${row['.key']}`">
           <td
             v-bind:data-column-name="head"
             v-for="head in getHeaders"
@@ -192,7 +192,6 @@ export default {
       const colName = this.fieldBeingEdited.split("-")[2];
 
       const ref = `${this.config.tableName}/${rowObject}`;
-      console.log(rowObject, colName, ref);
       const cellData = document.getElementById(
         `${this.fieldBeingEdited}-textarea`
       ).value;

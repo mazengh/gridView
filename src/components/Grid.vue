@@ -101,7 +101,7 @@
               >{{row[head]}}</span>
             </p>
 
-            <span v-else>{{row[head]}}</span>
+            <span v-else>{{row[head] | gridFilter(head)}}</span>
           </td>
           <td data-column-name="Select">
             <input

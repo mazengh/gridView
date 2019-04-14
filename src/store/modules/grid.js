@@ -1,3 +1,4 @@
+import Vue from "vue";
 import { firebaseAction } from "vuexfire";
 
 const state = {
@@ -38,28 +39,33 @@ const getters = {
             return true;
           }
 
+          // if a format is specified for a column, use it to compare with expression
+          const cellData = col.format
+            ? col.format(row[col.name])
+            : isNaN(row[col.name])
+            ? row[col.name]
+            : row[col.name].toString();
+
           if (comparisonOperator) {
             switch (comparisonOperator[0]) {
               case "=":
-                return row[col.name] == col.expr.substr(1);
+                return cellData == col.expr.substr(1);
               case ">":
-                return row[col.name] > col.expr.substr(1);
+                return cellData > col.expr.substr(1);
               case ">=":
-                return row[col.name] >= col.expr.substr(2);
+                return cellData >= col.expr.substr(2);
               case "<":
-                return row[col.name] < col.expr.substr(1);
+                return cellData < col.expr.substr(1);
               case "<=":
-                return row[col.name] <= col.expr.substr(2);
+                return cellData <= col.expr.substr(2);
               case "!=":
               case "<>":
-                return row[col.name] != col.expr.substr(2);
+                return cellData != col.expr.substr(2);
             }
           }
 
           const regexpr = new RegExp(col.expr, "gi");
-          const cellData = isNaN(row[col.name])
-            ? row[col.name]
-            : row[col.name].toString();
+
           if (!cellData.match(regexpr)) {
             return false;
           }
@@ -119,9 +125,7 @@ const getters = {
 
     return selectVisible;
   },
-  getAllIDs: state => {
-    return Object.keys(state.rows);
-  }
+  getAllIDs: state => Object.keys(state.rows)
 };
 
 const mutations = {
@@ -171,6 +175,21 @@ const mutations = {
         return 1;
       }
     });
+
+    Vue.filter("gridFilter", (data, colName) => {
+      const col = state.colsToShow.find(col => col.name === colName);
+      if (col.format) {
+        return col.format(data);
+      } else {
+        return data;
+      }
+    });
+
+    // state.colsToShow.forEach(col => {
+    //   if (col.format) {
+    //     Vue.filter(col.name, col.format);
+    //   }
+    // });
   },
   toggleCol(state, colName) {
     // hide column only if we have more that one column visible

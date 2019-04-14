@@ -81,6 +81,7 @@ const getters = {
   },
   getTableName: state => state.tableName,
   getColCount: state => state.colsToShow.length,
+  getRowCount: state => state.rows.length,
   getShowColFilter: state => state.showColFilter,
   getSortCol: state => state.sortCol,
   getPaginationSummary: state => {
@@ -104,6 +105,22 @@ const getters = {
       { length: getters.getTotalPages(state) },
       (j, k) => k + 1
     );
+  },
+  getSelections: state => selectedKeys => {
+    const headers = getters.getHeaders(state);
+
+    const selected = selectedKeys.map(key => state.rows[key]);
+
+    const selectVisible = selected.map(selectedRow => {
+      return headers.map(visibleCol => {
+        return selectedRow[visibleCol];
+      });
+    });
+
+    return selectVisible;
+  },
+  getAllIDs: state => id => {
+    return Object.keys(state.rows);
   }
 };
 

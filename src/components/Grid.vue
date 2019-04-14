@@ -7,9 +7,12 @@
             <div class="controls">
               <div class="title">
                 <font-awesome-icon :icon="['fa', 'table']"></font-awesome-icon>
-                <h3>Payments</h3>
+                <h3>{{getTableName}}</h3>
               </div>
-              <div class="colFilter" title="Filter Columns">
+              <div class="rowFilterBtn" title="Sort &amp; Filter">
+                <font-awesome-icon :icon="['fa', 'bars']" @click="toggleRowFilter"></font-awesome-icon>
+              </div>
+              <div class="colFilterBtn" title="Filter Columns">
                 <font-awesome-icon :icon="['fa', 'bars']" @click="toggleColFilter"></font-awesome-icon>
                 <div
                   class="colsToFilter"
@@ -27,18 +30,15 @@
                   </ul>
                 </div>
               </div>
-              <div class="paginationSummary">
-                Showing
-                <b>{{getPaginationSummary.firstRow}}-{{getPaginationSummary.lastRow}}</b>
-                <span v-show="getPaginationSummary.totalRows > getPaginationSummary.lastRow">
-                  of
-                  <b>{{getPaginationSummary.totalRows}}</b>
-                </span>
+              <div class="exportBtn" title="Export Selections to CSV File">
+                <a href="javascript:void(0)" download="export.csv">
+                  <font-awesome-icon :icon="['fa', 'file-export']"></font-awesome-icon>
+                </a>
               </div>
             </div>
           </th>
         </tr>
-        <tr>
+        <tr class="headers" v-bind:class="{headerFiltersShow: absoluteHeadersActive}">
           <th v-for="head in getHeaders" :key="`${head}-col}`">
             <div class="gridHead">
               <div class="colHeader" @click="sortCol(head)">
@@ -61,6 +61,14 @@
                   @mouseleave="removePlaceHolder($event)"
                   @input="setFilterExpr($event, head)"
                 >
+              </div>
+            </div>
+          </th>
+          <th class="actions">
+            <div class="gridHead">
+              <div class="colHeader">Selections</div>
+              <div class="colFilter">
+                <input type="checkbox" v-model="totalSelected" @click="selectAll">
               </div>
             </div>
           </th>
@@ -95,6 +103,14 @@
 
             <span v-else>{{row[head]}}</span>
           </td>
+          <td data-column-name="Select">
+            <input
+              type="checkbox"
+              v-bind:value="row['.key']"
+              v-model="checkedCells"
+              @change="toggleExportList"
+            >
+          </td>
         </tr>
       </tbody>
       <tfoot>
@@ -113,6 +129,18 @@
             </ul>
           </td>
         </tr>
+        <tr>
+          <td>
+            <div class="paginationSummary">
+              Showing
+              <b>{{getPaginationSummary.firstRow}}-{{getPaginationSummary.lastRow}}</b>
+              <span v-show="getPaginationSummary.totalRows > getPaginationSummary.lastRow">
+                of
+                <b>{{getPaginationSummary.totalRows}}</b>
+              </span>
+            </div>
+          </td>
+        </tr>
       </tfoot>
     </table>
   </div>
@@ -128,11 +156,15 @@ export default {
   props: { config: Object },
   data() {
     return {
-      fieldBeingEdited: null
+      fieldBeingEdited: null,
+      absoluteHeadersActive: false,
+      checkedCells: [],
+      totalSelected: false
     };
   },
   computed: {
     ...mapGetters([
+      "getTableName",
       "getRows",
       "getHeaders",
       "getColCount",
@@ -140,7 +172,10 @@ export default {
       "getShowColFilter",
       "getSortCol",
       "getPaginationSummary",
-      "getPages"
+      "getPages",
+      "getSelections",
+      "getAllIDs",
+      "getRowCount"
     ]),
     ...mapState({
       sortDirection: state => state.grid.sortDirection,
@@ -167,7 +202,7 @@ export default {
       this.sortBy({ ref: dbTableRef, col: col });
     },
     addPlaceHolder: function(event, head) {
-      event.target.placeholder = `Search or filter ${head}`;
+      event.target.placeholder = `Filter ${head}`;
     },
     removePlaceHolder: function(event) {
       event.target.placeholder = "";
@@ -185,6 +220,7 @@ export default {
           document.getElementById(`${this.fieldBeingEdited}-textarea`).focus();
         }, 500);
       }
+
       event.stopPropagation();
     },
     saveField(event) {
@@ -206,9 +242,61 @@ export default {
     isEditable(colName) {
       const col = this.colsToShow.find(col => col.name === colName);
       return col.editable;
+    },
+    toggleRowFilter() {
+      this.absoluteHeadersActive = !this.absoluteHeadersActive;
+    },
+    toggleExportList() {
+      const exportLink = document.querySelector(".exportBtn a");
+
+      // reset export link if there are no selections
+      if (!this.checkedCells.length) {
+        exportLink.href = "javascript:void(0);";
+        return;
+      }
+
+      // get data for all checked rows
+      let selections = this.getSelections(this.checkedCells);
+
+      // add headers to csv content
+      selections.unshift(this.getHeaders);
+
+      // convert data to csv string with comma as a delimiter
+      let csvContent = selections
+        .map(e => {
+          // create csv string for row while escaping text
+          let escaped = e.reduce(function(prevVal, currVal, index) {
+            return index == 0
+              ? currVal
+              : prevVal +
+                  "," +
+                  (isNaN(currVal) ? '"' + currVal + '"' : currVal);
+          }, "");
+          return escaped;
+        })
+        .join("\r\n");
+
+      var encodedUri =
+        "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+
+      // set the export link to href to download the data of the selections
+      exportLink.href = encodedUri;
+
+      this.totalSelected = this.getRowCount === this.checkedCells.length;
+    },
+    selectAll() {
+      // if total selected, deselect all
+      if (this.totalSelected) {
+        this.checkedCells = [];
+      } else {
+        // get the ids of all rows
+        this.checkedCells = this.getAllIDs(1);
+      }
+
+      // set the export list
+      this.toggleExportList();
     }
   },
-  beforeCreate() {},
   created() {
     const dbTableRef = db.ref(this.config.tableName);
     this.$store.commit("addConfig", this.config);
@@ -221,7 +309,10 @@ export default {
 <style>
 div.grid-container {
   width: 1200px;
-  margin: auto;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
 }
 
 .controls {
@@ -232,36 +323,55 @@ div.grid-container {
 }
 .controls div h3 {
   margin: -4px 0 0 5px;
-  padding: 0px;
+  padding: 0;
 }
 
-.title {
+div.title {
   display: flex;
   flex-grow: 1;
+  cursor: default;
+}
+
+/* File export CSS */
+.exportBtn {
+  cursor: pointer;
+}
+
+.exportBtn a {
+  text-decoration: none;
+  color: #fff;
+}
+
+/* Filter Rows CSS */
+.rowFilterBtn {
+  visibility: hidden;
+  margin-right: 15px;
 }
 
 /* Filter Columns CSS */
+.colHeader {
+  cursor: pointer;
+}
 .colFilter {
   align-items: flex-end;
-  margin-right: 30px;
-}
-.paginationSummary {
-  font-weight: normal;
-  font-size: 0.9em;
-  margin-right: 10px;
 }
 svg.fa-bars {
-  transform: rotate(90deg);
   cursor: pointer;
+}
+.colFilterBtn svg.fa-bars {
+  transform: rotate(90deg);
+}
+div.colFilterBtn {
+  margin-right: 20px;
 }
 div.colsToFilter {
   position: absolute;
   background: #c7d9db;
   border: 1px solid white;
   border-radius: 8px;
-  right: 0px;
+  right: 0;
   top: 30px;
-  z-index: 1;
+  z-index: 2;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s linear 300ms, opacity 300ms;
@@ -270,7 +380,7 @@ div.colsToFilter {
 div.colsToFilter h4 {
   display: block;
   color: #fff;
-  margin: 0px;
+  margin: 0;
   padding: 10px;
   white-space: nowrap;
   background: #219da6;
@@ -308,62 +418,53 @@ li.hiddenCol {
 }
 
 /* Pagination CSS */
+div.paginationSummary {
+  font-weight: normal;
+  font-size: 0.9em;
+  user-select: none;
+  cursor: default;
+  padding: 5px;
+}
 ul.pagination {
+  position: relative;
   list-style-type: none;
   display: inline-block;
-  padding: 10px 0;
+  padding: 10px 0 0 0;
   margin: 0;
 }
-
 ul.pagination li {
+  position: relative;
   display: inline;
   user-select: none;
 }
-
 ul.pagination li a {
+  position: relative;
   color: #364f54;
   float: left;
   padding: 5px 10px;
   text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.5s;
+  border: 1px solid #ddd;
 }
-
 ul.pagination li a.active {
   background-color: #364f54;
   color: white;
   font-weight: bold;
+  border-radius: 5px;
 }
-
 ul.pagination li a:hover:not(.active) {
   background-color: #ddd;
   cursor: pointer;
 }
-
-ul.pagination li a {
-  border-radius: 5px;
-}
-
-ul.pagination li a.active {
-  border-radius: 5px;
-}
-
-ul.pagination li a {
-  transition: background-color 0.5s;
-}
-
-ul.pagination li a {
-  border: 1px solid #ddd;
-}
-
 .pagination li:first-child a {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
-
 .pagination li:last-child a {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
-
 ul.pagination li a {
   margin: 0 2px;
 }
@@ -396,7 +497,7 @@ span.hidden {
   visibility: hidden;
 }
 /* Editable field CSS */
-button#saveFieldBtn {
+#saveFieldBtn {
   font-size: 0.5em;
   font-weight: bold;
   position: absolute;
@@ -428,26 +529,68 @@ textarea.editableCell:focus {
 
 /* Responsive Table CSS */
 table {
-  border: 1px solid white;
-  border-spacing: 1;
+  border: 1px solid #fff;
+  border-spacing: 1px;
   border-collapse: collapse;
-  background: white;
+  background: #364f54;
   border-radius: 8px;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-
   overflow: hidden;
-  width: 100%;
+  width: calc(100% - 2px);
   margin: 0 auto;
+}
+table thead,
+table tbody,
+table tfoot,
+table tr,
+table td,
+table th,
+table div,
+table tfoot tr td ul,
+table li {
   position: relative;
 }
-table * {
-  position: relative;
+table tbody {
+  display: block;
+  height: calc(
+    98vh - 12em
+  ); /* 98 of viewport height minus header and footer heights */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  background: #fff;
+  scrollbar-width: thin;
+}
+table tbody::-webkit-scrollbar {
+  background-color: rgb(214, 214, 214);
+  width: 8px;
+}
+table tbody::-webkit-scrollbar-thumb {
+  background-color: rgb(182, 182, 182);
+}
+
+table thead {
+  display: block;
+  width: calc(100%-1em);
+}
+thead tr,
+tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+thead tr {
+  width: calc(100% - 0.5em);
+  width: calc(vw - 0.5em);
 }
 table td,
 table th {
   padding: 0 15px;
+}
+table thead tr:last-child th:last-child,
+table tbody tr td:last-child {
+  width: 80px;
 }
 table thead tr {
   height: 50px;
@@ -467,11 +610,26 @@ table th {
   color: #fff;
   text-transform: capitalize;
   white-space: nowrap;
-  cursor: pointer;
+}
+table tbody tr:nth-child(even) {
+  background-color: #e6eeef;
+}
+table tbody tr:nth-child(odd) {
+  background-color: #fff;
+}
+tr.headers {
+  position: relative;
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s linear 300s, opacity 300ms;
 }
 
-tbody tr:nth-child(even) {
-  background-color: #e6eeef;
+table tfoot {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 /* rule for 1023px < width <= 1200px; */
@@ -483,25 +641,59 @@ tbody tr:nth-child(even) {
 
 /* rule for 767px < width <= 1023px; */
 @media only screen and (max-width: 1023px) {
+  table thead tr input[type="text"] {
+    width: 115px;
+  }
 }
 
 /* rule for 480px < width  <= 767px; */
 @media only screen and (max-width: 767px) {
+  tr.headers {
+    position: absolute;
+    z-index: 0;
+    width: 100%;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 300s, opacity 300ms;
+  }
+  tr.headers th {
+    width: 100%;
+    background: #364f54;
+    user-select: none;
+  }
+  tr.headerFiltersShow {
+    visibility: visible;
+    opacity: 1;
+    transition: visibility 0s linear 0s, opacity 300ms;
+    z-index: 1;
+  }
+  .rowFilterBtn {
+    visibility: visible;
+  }
   div.gridHead {
+    width: 110%;
     display: flex;
-    align-items: stretch;
-    justify-content: space-between;
-  }
-  div.colHead {
-  }
-  div.colFilter {
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 5px;
   }
   div.controls {
     align-items: center;
     height: 50px;
   }
+  table tbody {
+    height: calc(
+      100vh - 132px
+    ); /* 98 of viewport height minus header and footer heights */
+  }
   table thead tr:nth-child(1) th {
     height: 60px;
+  }
+  div.colFilter {
+    margin-right: calc(100vw - 290px);
+  }
+  div.colHeader {
+    flex-grow: 1;
   }
   div.colFilter input {
     height: 10px;
@@ -509,10 +701,15 @@ tbody tr:nth-child(even) {
   table {
     display: block;
   }
-  table > *,
+  table thead,
+  table tbody,
+  table tfoot,
   table tr,
   table td,
-  table th {
+  table th,
+  table div,
+  table tfoot tr td ul,
+  table li {
     display: block;
   }
   table thead tr:nth-child(2) {
@@ -528,7 +725,7 @@ tbody tr:nth-child(even) {
     padding: 10px 0;
   }
   table tbody tr td {
-    padding-left: 36% !important;
+    padding-left: 36%;
     width: calc(63% - 20px);
     margin-bottom: 24px;
   }
@@ -547,20 +744,31 @@ tbody tr:nth-child(even) {
   table tbody tr td:before {
     content: attr(data-column-name);
     text-transform: capitalize;
+    user-select: none;
+  }
+  table thead tr:last-child th:last-child div.colFilter {
+    margin-left: 125%;
   }
 
   textarea.editableCell {
     height: 100%;
-    margin-top: 0px;
+    margin-top: 0;
   }
 
-  button#saveFieldBtn {
+  #saveFieldBtn {
     right: -10px;
     top: -12px;
   }
-}
-
-/* rule for width <= 480px; */
-@media only screen and (max-width: 480px) {
+  ul.pagination {
+    padding: 5px 0 0 0;
+  }
+  ul.pagination li a {
+    padding: 4px 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+  div.colFilterBtn {
+    margin-right: 15px;
+  }
 }
 </style>

@@ -8,11 +8,19 @@ import {
   faBars,
   faSortAmountDown,
   faSortAmountUp,
-  faSpinner
+  faSpinner,
+  faFileExport
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-library.add(faTable, faBars, faSortAmountDown, faSortAmountUp, faSpinner);
+library.add(
+  faTable,
+  faBars,
+  faSortAmountDown,
+  faSortAmountUp,
+  faSpinner,
+  faFileExport
+);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;

@@ -58,8 +58,4 @@ body {
     font-size: 14px;
   }
 }
-
-/* rule for width <= 480px; */
-@media only screen and (max-width: 480px) {
-}
 </style>

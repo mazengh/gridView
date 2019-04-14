@@ -290,7 +290,7 @@ export default {
         this.checkedCells = [];
       } else {
         // get the ids of all rows
-        this.checkedCells = this.getAllIDs(1);
+        this.checkedCells = this.getAllIDs;
       }
 
       // set the export list

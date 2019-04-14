@@ -119,7 +119,7 @@ const getters = {
 
     return selectVisible;
   },
-  getAllIDs: state => id => {
+  getAllIDs: state => {
     return Object.keys(state.rows);
   }
 };

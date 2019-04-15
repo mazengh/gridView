@@ -21,10 +21,16 @@ export default {
             visible: true,
             expr: "",
             editable: false,
-            format: function(value) {
+            format: function(
+              value,
+              filterComparison = false,
+              compareWithFilter = true
+            ) {
               try {
+                if (filterComparison && !compareWithFilter) {
+                  return value;
+                }
                 if (value) {
-                  //console.log(value);
                   const dateObject = new Date(
                     Date.parse(value)
                   ).toLocaleString();
@@ -36,7 +42,30 @@ export default {
               }
             }
           },
-          { name: "amount", visible: true, expr: "", editable: false }
+          {
+            name: "amount",
+            visible: true,
+            expr: "",
+            editable: false,
+            format: function(
+              value,
+              filterComparison = false,
+              compareWithFilter = false
+            ) {
+              try {
+                // do not compare data with filtered value if compareWithFilter is false
+                if (filterComparison && !compareWithFilter) {
+                  return value;
+                }
+                if (value) {
+                  return `$${(value / 1).toFixed(2)}`;
+                }
+              } catch (e) {
+                // return the default value if formatting fails
+                return value;
+              }
+            }
+          }
         ],
         colOrder: ["id", "name", "description", "date", "amount"],
         pageSize: 10

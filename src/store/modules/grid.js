@@ -30,7 +30,6 @@ const getters = {
           // =, >, >=, <, <=, !=, <>
           // search for logical comparison operator in string
           const comparisonOperator = col.expr.match("^(<[=>]?|=|>=?|!=)");
-
           // do not start filtering while user is inputing comparison operator
           if (
             comparisonOperator &&
@@ -41,7 +40,7 @@ const getters = {
 
           // if a format is specified for a column, use it to compare with expression
           const cellData = col.format
-            ? col.format(row[col.name])
+            ? col.format(row[col.name], true)
             : isNaN(row[col.name])
             ? row[col.name]
             : row[col.name].toString();

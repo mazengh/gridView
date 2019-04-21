@@ -31,7 +31,7 @@
                 </div>
               </div>
               <div class="exportBtn" title="Export Selections to CSV File">
-                <a href="javascript:void(0)" download="export.csv">
+                <a ref="exportLink" href="javascript:void(0)" download="export.csv">
                   <font-awesome-icon :icon="['fa', 'file-export']"></font-awesome-icon>
                 </a>
               </div>
@@ -84,13 +84,14 @@
           >
             <p v-if="isEditable(head)">
               <button
-                id="saveFieldBtn"
+                class="saveFieldBtn"
                 title="Save"
                 v-if="fieldBeingEdited === `editable-${row['.key']}-${head}`"
                 @click="saveField($event)"
               >&#10004;</button>
               <textarea
                 :id="`editable-${row['.key']}-${head}-textarea`"
+                :ref="`editable-${row['.key']}-${head}-textarea`"
                 v-if="fieldBeingEdited === `editable-${row['.key']}-${head}`"
                 class="editableCell"
               >{{row[head]}}</textarea>
@@ -101,7 +102,7 @@
               >{{row[head]}}</span>
             </p>
 
-            <span v-else>{{row[head] | gridFilter(head)}}</span>
+            <span v-else>{{row[head] | gridFilter(getColumn(head))}}</span>
           </td>
           <td data-column-name="Select">
             <input
@@ -162,6 +163,15 @@ export default {
       totalSelected: false
     };
   },
+  filters: {
+    gridFilter: (data, col) => {
+      if (col && col.format) {
+        return col.format(data);
+      } else {
+        return data;
+      }
+    }
+  },
   computed: {
     ...mapGetters([
       "getTableName",
@@ -186,6 +196,7 @@ export default {
   },
   methods: {
     ...mapMutations([
+      "addConfig",
       "toggleCol",
       "toggleColFilter",
       "hideColFilter",
@@ -196,6 +207,9 @@ export default {
     closeColFilter(event) {
       event.stopPropagation();
       this.hideColFilter();
+    },
+    getColumn(colName) {
+      return this.colsToShow.find(col => col.name === colName);
     },
     sortCol(col) {
       const dbTableRef = db.ref(this.config.tableName);
@@ -216,9 +230,8 @@ export default {
     tbodyClickHandler(event) {
       if (event.target.className === "editable") {
         this.fieldBeingEdited = event.target.id;
-        setTimeout(() => {
-          document.getElementById(`${this.fieldBeingEdited}-textarea`).focus();
-        }, 500);
+        const textAreaRef = `${this.fieldBeingEdited}-textarea`;
+        this.$nextTick(() => this.$refs[textAreaRef][0].focus());
       }
 
       event.stopPropagation();
@@ -226,11 +239,10 @@ export default {
     saveField(event) {
       const rowObject = this.fieldBeingEdited.split("-")[1];
       const colName = this.fieldBeingEdited.split("-")[2];
+      const textAreaId = `${this.fieldBeingEdited}-textarea`;
 
       const ref = `${this.config.tableName}/${rowObject}`;
-      const cellData = document.getElementById(
-        `${this.fieldBeingEdited}-textarea`
-      ).value;
+      const cellData = this.$refs[textAreaId][0].value;
 
       const dbChildRef = db.ref(ref);
       this.editField({
@@ -240,18 +252,17 @@ export default {
       event.stopPropagation();
     },
     isEditable(colName) {
-      const col = this.colsToShow.find(col => col.name === colName);
-      return col.editable;
+      return this.getColumn(colName).editable;
     },
     toggleRowFilter() {
       this.absoluteHeadersActive = !this.absoluteHeadersActive;
     },
     toggleExportList() {
-      const exportLink = document.querySelector(".exportBtn a");
+      const exportLink = this.$refs["exportLink"];
 
       // reset export link if there are no selections
       if (!this.checkedCells.length) {
-        exportLink.href = "javascript:void(0);";
+        exportLink.href = "javascript:void(0)";
         return;
       }
 
@@ -497,7 +508,7 @@ span.hidden {
   visibility: hidden;
 }
 /* Editable field CSS */
-#saveFieldBtn {
+.saveFieldBtn {
   font-size: 0.5em;
   font-weight: bold;
   position: absolute;
@@ -582,7 +593,6 @@ tbody tr {
 }
 thead tr {
   width: calc(100% - 0.5em);
-  width: calc(vw - 0.5em);
 }
 table td,
 table th {
@@ -752,11 +762,12 @@ table tfoot {
 
   textarea.editableCell {
     height: 100%;
+    width: calc(63% - 20px);
     margin-top: 0;
   }
 
-  #saveFieldBtn {
-    right: -10px;
+  .saveFieldBtn {
+    right: -5px;
     top: -12px;
   }
   ul.pagination {

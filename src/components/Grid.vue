@@ -229,7 +229,6 @@ export default {
     },
     tbodyClickHandler(event) {
       if (event.target.className === "editable") {
-        console.log("editable field clicked");
         this.fieldBeingEdited = event.target.id;
         const textAreaRef = `${this.fieldBeingEdited}-textarea`;
         this.$nextTick(() => this.$refs[textAreaRef][0].focus());

@@ -154,7 +154,7 @@ describe("Grid", () => {
 
   // Sort a column
   it("sorts column", () => {
-    const button = wrapper.find("div.colHeader");
+    const button = wrapper.find("div.colHeader span");
     expect(button.exists()).toBe(true);
 
     button.trigger("click", "id");
@@ -260,6 +260,12 @@ describe("Grid", () => {
     expect(saveFieldBtn.is("button.saveFieldBtn")).toBe(true);
     saveFieldBtn.trigger("click");
     expect(actions.editField).toHaveBeenCalled();
+
+    // clicking the editableCell should not close
+    // editable textarea
+    const editableCell = wrapper.find("textarea.editableCell");
+    editableCell.trigger("click");
+    expect(textArea.is("textarea#" + textAreaRef)).toBe(true);
   });
 
   // Toggle Row Filter

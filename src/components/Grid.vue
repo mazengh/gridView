@@ -41,8 +41,8 @@
         <tr class="headers" v-bind:class="{headerFiltersShow: absoluteHeadersActive}">
           <th v-for="head in getHeaders" :key="`${head}-col}`">
             <div class="gridHead">
-              <div class="colHeader" @click="sortCol(head)">
-                {{head}}
+              <div class="colHeader">
+                <span @click="sortCol(head)" :title="`Sort ${head}`">{{head}}</span>
                 <i v-show="getSortCol === head">
                   <font-awesome-icon :icon="['fa', 'spinner']" spin v-if="isSorting"></font-awesome-icon>
                   <font-awesome-icon
@@ -229,9 +229,12 @@ export default {
     },
     tbodyClickHandler(event) {
       if (event.target.className === "editable") {
+        console.log("editable field clicked");
         this.fieldBeingEdited = event.target.id;
         const textAreaRef = `${this.fieldBeingEdited}-textarea`;
         this.$nextTick(() => this.$refs[textAreaRef][0].focus());
+      } else if (event.target.className !== "editableCell") {
+        this.fieldBeingEdited = null;
       }
 
       event.stopPropagation();
@@ -360,7 +363,7 @@ div.title {
 }
 
 /* Filter Columns CSS */
-.colHeader {
+.colHeader span {
   cursor: pointer;
 }
 .colFilter {
@@ -540,7 +543,6 @@ textarea.editableCell:focus {
 
 /* Responsive Table CSS */
 table {
-  border: 1px solid #fff;
   border-spacing: 1px;
   border-collapse: collapse;
   background: #364f54;
@@ -549,8 +551,9 @@ table {
   font-size: inherit;
   font-weight: inherit;
   overflow: hidden;
-  width: calc(100% - 2px);
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 table thead,
 table tbody,

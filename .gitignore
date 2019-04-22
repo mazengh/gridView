@@ -9,6 +9,7 @@ database.rules.json
 .firebase/
 .firebaserc
 firebase.json
+src/firebaseConfig.js
 
 # Editor directories and files
 .idea

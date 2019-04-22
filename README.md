@@ -21,7 +21,7 @@ compatible with other database systems like MySQL.
 
 The component can be adapted for usage as a widget in a dashboard.
 
-One of the useful CSS properties was flexbox whichhelped with alignment of elements.
+One of the useful CSS properties was flexbox which helped with the alignment of elements.
 
 My favorite modern JavaScript feature, which was used in the project, is the computed 
 property name syntax because it allows for easier creation of dynamic objects.

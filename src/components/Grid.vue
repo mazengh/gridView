@@ -31,8 +31,7 @@
                 </div>
               </div>
               <div class="exportBtn" title="Export Selections to CSV File">
-                <a ref="exportLink" href="javascript:void(0)" download="export.csv">
-                  <span class="exportCSVBtnLabel">Export selections to CSV file</span>
+                <a title="Export selections to CSV file" ref="exportLink" href="javascript:void(0)" download="export.csv">
                   <font-awesome-icon :icon="['fa', 'file-export']"></font-awesome-icon>
                 </a>
               </div>

@@ -7,7 +7,7 @@
             <div class="controls">
               <div class="title">
                 <font-awesome-icon :icon="['fa', 'table']"></font-awesome-icon>
-                <h3>{{getTableName}}</h3>
+                <span :title="getTableName + ' Table'">{{getTableName}}</span>
               </div>
               <div class="rowFilterBtn" title="Sort &amp; Filter">
                 <font-awesome-icon :icon="['fa', 'bars']" @click="toggleRowFilter"></font-awesome-icon>
@@ -19,7 +19,7 @@
                   v-bind:class="{ showCols: getShowColFilter }"
                   @mouseleave="closeColFilter"
                 >
-                  <h4>Filter Columns</h4>
+                  <header>Filter Columns</header>
                   <ul class>
                     <li
                       v-for="(head, index) in getColsToShow"
@@ -32,6 +32,7 @@
               </div>
               <div class="exportBtn" title="Export Selections to CSV File">
                 <a ref="exportLink" href="javascript:void(0)" download="export.csv">
+                  <span class="exportCSVBtnLabel">Export selections to CSV file</span>
                   <font-awesome-icon :icon="['fa', 'file-export']"></font-awesome-icon>
                 </a>
               </div>
@@ -68,7 +69,8 @@
             <div class="gridHead">
               <div class="colHeader">Selections</div>
               <div class="colFilter">
-                <input type="checkbox" v-model="totalSelected" @click="selectAll">
+                <label class="selectionsForExport" for="selectAll">Select all rows</label>
+                <input type="checkbox" id="selectAll" v-model="totalSelected" @click="selectAll">
               </div>
             </div>
           </th>
@@ -105,7 +107,9 @@
             <span v-else>{{row[head] | gridFilter(getColumn(head))}}</span>
           </td>
           <td data-column-name="Select">
+            <label class="selectionsForExport" :for="'id_' + row['.key']">Select row</label>
             <input
+              v-bind:id="'id_' + row['.key']"
               type="checkbox"
               v-bind:value="row['.key']"
               v-model="checkedCells"
@@ -119,13 +123,13 @@
           <td :colspan="getColCount">
             <ul class="pagination">
               <li>
-                <a @click="previousPage">&laquo;</a>
+                <button @click="previousPage">&laquo;</button>
               </li>
               <li v-for="page in getPages" :key="`page${page}`">
-                <a @click="setPage(page)" v-bind:class="{ active: page===currentPage}">{{page}}</a>
+                <button @click="setPage(page)" v-bind:class="{ active: page===currentPage}">{{page}}</button>
               </li>
               <li>
-                <a @click="nextPage">&raquo;</a>
+                <button @click="nextPage">&raquo;</button>
               </li>
             </ul>
           </td>
@@ -334,8 +338,8 @@ div.grid-container {
   justify-content: space-between;
   align-items: baseline;
 }
-.controls div h3 {
-  margin: -4px 0 0 5px;
+.controls div span {
+  margin: -3px 0 0 5px;
   padding: 0;
 }
 
@@ -353,6 +357,8 @@ div.title {
 .exportBtn a {
   text-decoration: none;
   color: #fff;
+  background-color: inherit;
+  border: none;
 }
 
 /* Filter Rows CSS */
@@ -390,13 +396,13 @@ div.colsToFilter {
   transition: visibility 0s linear 300ms, opacity 300ms;
   overflow: hidden;
 }
-div.colsToFilter h4 {
+div.colsToFilter header {
   display: block;
   color: #fff;
   margin: 0;
   padding: 10px;
   white-space: nowrap;
-  background: #219da6;
+  background: #1a7d85;
 }
 div.colsToFilter ul {
   list-style-type: none;
@@ -405,7 +411,7 @@ div.colsToFilter ul {
 }
 div.colsToFilter ul li {
   padding: 8px 8px;
-  border-bottom: 1px solid #219da6;
+  border-bottom: 1px solid #1a7d85;
   font-size: 0.9em;
 }
 
@@ -450,7 +456,7 @@ ul.pagination li {
   display: inline;
   user-select: none;
 }
-ul.pagination li a {
+ul.pagination li button {
   position: relative;
   color: #364f54;
   float: left;
@@ -459,27 +465,30 @@ ul.pagination li a {
   border-radius: 5px;
   transition: background-color 0.5s;
   border: 1px solid #ddd;
+  margin: 0 2px;
+  background-color: #fff;
+  cursor: pointer;
 }
-ul.pagination li a.active {
+ul.pagination li button:focus {
+  outline: 0;
+}
+ul.pagination li button.active {
   background-color: #364f54;
   color: white;
   font-weight: bold;
   border-radius: 5px;
 }
-ul.pagination li a:hover:not(.active) {
+ul.pagination li button:hover:not(.active) {
   background-color: #ddd;
   cursor: pointer;
 }
-.pagination li:first-child a {
+.pagination li:first-child button {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
-.pagination li:last-child a {
+.pagination li:last-child button {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-}
-ul.pagination li a {
-  margin: 0 2px;
 }
 
 /* Sort Columns CSS */
@@ -538,6 +547,12 @@ textarea.editableCell {
 textarea.editableCell:focus {
   border: none;
   outline: none;
+}
+
+/* CSS needed for input label accessibility support */
+label.selectionsForExport,
+span.exportCSVBtnLabel {
+  display: none;
 }
 
 /* Responsive Table CSS */

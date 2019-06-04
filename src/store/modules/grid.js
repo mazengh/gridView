@@ -90,7 +90,7 @@ const getters = {
       .filter(col => col.visible)
       .map(visibleCol => visibleCol.name);
   },
-  getTableName: state => state.tableName,
+  getTableName: state => state.tableName.charAt(0).toUpperCase() + state.tableName.slice(1).toLowerCase(),
   getColCount: state => state.colsToShow.length,
   getRowCount: state => state.rows.length,
   getShowColFilter: state => state.showColFilter,

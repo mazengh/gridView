@@ -7,6 +7,15 @@ Sample running demo at https://brite-core-1d49c.firebaseapp.com/
 ### About
 
 Grid View is a table grid component for a firebase object representing tablular data. 
+This component offers the below features
+  - A **responsive** layout
+  - Ability to **toggle** data columns
+  - Ability to **sort** columns
+  - Ability to **search** data
+  - Ability to **filter** data with logical operators =, >, >=, <, <=, !=, <>
+  - Ability to **paginate** results based on configured page size
+  - Ability to select rows to **export** the **visible** results to CSV file
+  - Ability to **edit** cell data based on editable column in config
 
 The component was developed without any prior knowledge to the below:
   - Vue.js
@@ -49,7 +58,7 @@ It helped me use fontawesome as a component inside my grid template.
 
 ### Configure app
 
-- Copy `firebaseConfig.default.js` to `firebaseConfig.js` then edit it with your firebase database information.
+- Copy `src/firebaseConfig.default.js` to `src/firebaseConfig.js` then edit it with your firebase database information.
 - Configure default grid configuration variable to be passed as a prop to grid view component. Sample below. 
 ```
     gridConfig: {
@@ -109,6 +118,9 @@ $ npm run dev
 
 # build for production with minification
 $ npm run build
+
+# test coverage
+$ npm test -- --coverage
 ```
 
 

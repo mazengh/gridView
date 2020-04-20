@@ -1,80 +1,22 @@
 <template>
   <div id="app">
-    <mg-grid :config="gridConfig"></mg-grid>
+    <grid :config="gridConfig"></grid>
   </div>
 </template>
 
 <script>
 import Grid from "./components/Grid.vue";
+import gridConfig from "./conf/gridConfig";
 
 export default {
-  data: function() {
-    return {
-      gridConfig: {
-        tableName: "payments",
-        colsToShow: [
-          { name: "description", visible: true, expr: "", editable: true },
-          { name: "name", visible: true, expr: "", editable: false },
-          { name: "id", visible: true, expr: "", editable: false },
-          {
-            name: "date",
-            visible: true,
-            expr: "",
-            editable: false,
-            format: function(
-              value,
-              filterComparison = false,
-              compareWithFilter = true
-            ) {
-              try {
-                if (filterComparison && !compareWithFilter) {
-                  return value;
-                }
-                if (value) {
-                  const dateObject = new Date(
-                    Date.parse(value)
-                  ).toLocaleString();
-                  return dateObject;
-                }
-              } catch (e) {
-                // return the default value if formatting fails
-                return value;
-              }
-            }
-          },
-          {
-            name: "amount",
-            visible: true,
-            expr: "",
-            editable: false,
-            format: function(
-              value,
-              filterComparison = false,
-              compareWithFilter = false
-            ) {
-              try {
-                // do not compare data with filtered value if compareWithFilter is false
-                if (filterComparison && !compareWithFilter) {
-                  return value;
-                }
-                if (value) {
-                  return `$${(value / 1).toFixed(2)}`;
-                }
-              } catch (e) {
-                // return the default value if formatting fails
-                return value;
-              }
-            }
-          }
-        ],
-        colOrder: ["id", "name", "description", "date", "amount"],
-        pageSize: 10
-      }
-    };
+  computed: {
+    gridConfig() {
+      return gridConfig;
+    },
   },
   components: {
-    mgGrid: Grid
-  }
+    Grid,
+  },
 };
 </script>
 
@@ -87,6 +29,19 @@ body {
   font-weight: 300;
   font-size: 16px;
   text-rendering: optimizeLegibility;
+}
+
+/* tailwind's screen reader only class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* rule for 1023px < width <= 1200px; */

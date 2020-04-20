@@ -6,21 +6,20 @@ module.exports = {
     ecmaVersion: 6,
     sourceType: "module",
     ecmaFeatures: {
-      jsx: true,
-    },
+      jsx: true
+    }
   },
   env: {
     browser: true,
     node: true,
-    jest: true,
+    jest: true
   },
-  // extends: "standard",
-  extends: ["standard", "plugin:prettier/recommended"],
+  extends: "standard",
   // required to lint *.vue files
   plugins: ["html"],
   // add your custom rules here
   rules: {
-    semi: "error",
+    semi: "error"
   },
-  globals: {},
+  globals: {}
 };

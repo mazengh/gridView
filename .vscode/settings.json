@@ -1,0 +1,44 @@
+{
+  "css.validate": false,
+  "scss.validate": false,
+  "files.associations": {
+    "*.css": "postcss",
+    "*.pcss": "postcss"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.includeLanguages": {
+    "postcss": "css",
+    "vue": "html"
+  },
+  "emmet.syntaxProfiles": {
+    "postcss": "css"
+  },
+  "eslint.validate": ["vue", "html", "javascript", "javascriptreact"],
+  "html.format.endWithNewline": true,
+  "html.format.preserveNewLines": true,
+  "html.format.extraLiners": null,
+  "html.format.wrapAttributes": "force-aligned",
+  "html.format.wrapLineLength": 100,
+  "prettier.disableLanguages": [],
+  "stylelint.enable": true,
+  "vetur.trace.server": "verbose",
+  "vetur.validation.template": false,
+  "vetur.completion.useScaffoldSnippets": true,
+  "vetur.format.defaultFormatter.html": "prettier",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "prettier.configPath": ".prettierrc.js",
+  "prettier.printWidth": 100,
+  "prettier.proseWrap": "preserve",
+  "prettier.htmlWhitespaceSensitivity": "ignore",
+  "prettier.jsxSingleQuote": false,
+  "prettier.singleQuote": false,
+  "prettier.quoteProps": "consistent",
+  "prettier.semi": false,
+  "prettier.trailingComma": "all"
+}

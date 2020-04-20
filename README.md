@@ -1,4 +1,4 @@
-# gridView [![coverage](https://badgen.net/codecov/c/github/mazengh/gridView)](https://codecov.io/gh/mazengh/gridView)
+# gridView
 
 > Vue.js Single File Component Grid View
 
@@ -85,15 +85,6 @@ The component can be adapted for usage as a widget in a dashboard.
 ```bash
 # install dependencies
 $ npm install
-    "@fortawesome/fontawesome-svg-core": "^1.2.17" \
-    "@fortawesome/free-solid-svg-icons": "^5.8.1" \
-    "@fortawesome/vue-fontawesome": "^0.1.6" \
-    "firebase": "^5.9.2" \
-    "vue": "^2.5.11" \
-    "vue-loader": "^15.7.0" \
-    "vue-router": "^3.0.2" \
-    "vuex": "^3.1.0" \
-    "vuexfire": "^2.3.1"
 
 # serve with hot reload at localhost:8080
 $ npm run dev

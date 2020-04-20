@@ -1,5 +1,5 @@
 <template functional>
-  <td>
+  <td :data-column-name="props.columnName">
     <span>
       {{ props.content }}
     </span>

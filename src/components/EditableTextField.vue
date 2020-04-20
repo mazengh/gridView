@@ -2,6 +2,7 @@
   <td
     class="editable-textfield"
     :class="{ 'editable-textfield--edited': modified }"
+    :data-column-name="columnName"
     @input="onInput"
   >
     <div

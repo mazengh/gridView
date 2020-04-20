@@ -145,6 +145,7 @@ export default {
 
 @media only screen and (max-width: 767px) {
   .pagination {
+    padding: 0;
     &__list {
       padding: 5px 0 0 0;
 

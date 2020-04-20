@@ -2,7 +2,7 @@
 
 > Vue.js Single File Component Grid View
 
-Sample running demo at https://brite-core-1d49c.firebaseapp.com/
+Sample running demo at https://mazengh.github.io/grid-view
 
 ### About
 

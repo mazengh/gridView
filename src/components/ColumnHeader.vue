@@ -6,10 +6,10 @@
         <i>
           <font-awesome-icon :icon="columnIcon" :spin="spinning"></font-awesome-icon>
         </i>
+        <i v-if="isEditable" title="Editable column data">
+          <font-awesome-icon :icon="['fa', 'edit']"></font-awesome-icon>
+        </i>
       </div>
-      <i v-if="isEditable" title="Editable column data">
-        <font-awesome-icon :icon="['fa', 'edit']"></font-awesome-icon>
-      </i>
     </div>
 
     <div class="column-header__filter">
@@ -99,9 +99,6 @@ export default {
 .column-header {
   &__field {
     display: flex;
-    & > i {
-      margin-left: auto;
-    }
   }
   &__icon label {
     cursor: pointer;
@@ -114,9 +111,26 @@ export default {
     & i {
       margin-left: 1rem;
     }
+    & i + i {
+      cursor: default;
+      margin-left: 2rem;
+    }
   }
   &__filter {
     width: 100%;
+  }
+}
+
+/* rule for 767px < width <= 1023px; */
+@media only screen and (max-width: 1023px) {
+  .column-header {
+    &__filter input[type="text"] {
+      width: 115px;
+    }
+    i,
+    i + i {
+      margin-left: 0.5rem;
+    }
   }
 }
 </style>

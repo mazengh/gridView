@@ -201,15 +201,11 @@ tr.headers {
   }
 }
 
-/* rule for 767px < width <= 1023px; */
-@media only screen and (max-width: 1023px) {
-  table thead tr input[type="text"] {
-    width: 115px;
-  }
-}
-
 /* rule for 480px < width  <= 767px; */
 @media only screen and (max-width: 767px) {
+  table {
+    min-width: 19rem;
+  }
   tr.headers {
     position: absolute;
     display: flex;
@@ -280,15 +276,11 @@ tr.headers {
     margin-bottom: 0;
   }
   table tbody tr td:before {
-    font-size: 14px;
-    color: #999999;
+    font-size: 0.875rem;
+    color: #777777;
     line-height: 1.2;
     position: absolute;
-    width: 35%;
-    left: 10px;
-    top: 0;
-  }
-  table tbody tr td:before {
+    left: 0.5rem;
     content: attr(data-column-name);
     text-transform: capitalize;
     user-select: none;

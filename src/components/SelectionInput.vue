@@ -32,7 +32,6 @@ export default {
   },
   methods: {
     onInput() {
-      // console.log(event, event, event.target.value, checked);
       this.$emit("toggle", { checked: !this.checked, value: this.value });
     },
   },

@@ -6,50 +6,28 @@ Sample running demo at https://brite-core-1d49c.firebaseapp.com/
 
 ### About
 
-Grid View is a table grid component for a firebase object representing tablular data. 
+Grid View is a table grid component for a firebase object representing tablular data.
+
+This sample project is an example of refactoring messy code to a more readable code that doesn't
+feature any nested v-ifs in v-for directives in the template tag. The source code for the messy code
+is available in the `messy-code` folder at the root level.
+
 This component offers the below features
-  - A **responsive** layout
-  - Ability to **toggle** data columns
-  - Ability to **sort** columns
-  - Ability to **search** data
-  - Ability to **filter** data with logical operators =, >, >=, <, <=, !=, <>
-  - Ability to **paginate** results based on configured page size
-  - Ability to select rows to **export** the **visible** results to CSV file
-  - Ability to **edit** cell data based on editable column in config
 
-The component was developed without any prior knowledge to the below:
-  - Vue.js
-  - VuexFire
-  - Firebase
-  - Jest
-  
-The development time required was anywhere between 20 to 25 hours.
+- A **responsive** layout
+- Ability to **toggle** data columns
+- Ability to **sort** columns
+- Ability to **search** data
+- Ability to **filter** data with logical operators =, >, >=, <, <=, !=, <>
+- Ability to **paginate** results based on configured page size
+- Ability to select rows to **export** the **visible** results to CSV file
+- Ability to **edit** cell data based on editable column in config
 
-The project can be improved by abstracting the database connection layer and making it 
-compatible with other database systems like MySQL.
+The CSS for this project can be refactored, cleaned and improved. The project can also be improved
+by abstracting the database connection layer and making it compatible with other database systems
+like MySQL.
 
 The component can be adapted for usage as a widget in a dashboard.
-
-One of the useful CSS properties was flexbox which helped with the alignment of elements.
-
-My favorite modern JavaScript feature, which was used in the project, is the computed 
-property name syntax because it allows for easier creation of dynamic objects.
-
-Instead of:
-```
-var a = "b"
-var c = {}
-c[a] = "d"
-```
-You can write:
-```
-var a = "b"
-var c = {[a]: "d"}
-```
-
-My Favorite Vue.js third party library used in this project is vue-fontawesome. 
-It helped me use fontawesome as a component inside my grid template.
-
 
 ## Install
 
@@ -58,8 +36,11 @@ It helped me use fontawesome as a component inside my grid template.
 
 ### Configure app
 
-- Copy `src/firebaseConfig.default.js` to `src/firebaseConfig.js` then edit it with your firebase database information.
-- Configure default grid configuration variable to be passed as a prop to grid view component. Sample below. 
+- Copy `src/firebaseConfig.default.js` to `src/firebaseConfig.js` then edit it with your firebase
+  database information.
+- Configure default grid configuration variable to be passed as a prop to grid view component.
+  Sample below.
+
 ```
     gridConfig: {
         tableName: "payments",  // parent object encapsulating grid objects
@@ -96,6 +77,7 @@ It helped me use fontawesome as a component inside my grid template.
         pageSize: 10                        // number of results per page to display
       }
 ```
+
 - Add component to template with configured prop object
 
 ## Build
@@ -122,5 +104,3 @@ $ npm run build
 # test coverage
 $ npm test -- --coverage
 ```
-
-
